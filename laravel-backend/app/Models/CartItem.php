@@ -9,9 +9,7 @@ class CartItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'quantity', 'user_id', 'product_id'
-    ];
+    protected $fillable = ['user_id', 'product_id', 'quantity'];
 
     public function user()
     {

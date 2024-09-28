@@ -1,26 +1,28 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "./dist/out-tsc",
-    "strict": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "sourceMap": true,
-    "declaration": false,
-    "experimentalDecorators": true,
-    "moduleResolution": "bundler",
-    "importHelpers": true,
-    "target": "ES2022",
-    "module": "ES2022",
+    "target": "ES2022", // Target version of ECMAScript
+    "module": "ES2022", // Module system to use
+    "strict": true, // Enable all strict type-checking options
+    "esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules
+    "skipLibCheck": true, // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true, // Disallow inconsistently-cased references to the same file
+    "baseUrl": "./src", // Base directory to resolve non-relative module names
+    "paths": {
+      "*": ["node_modules/*"] // Paths for module resolution
+    },
+    "outDir": "./dist/out-tsc", // Redirect output structure to the directory
+    "noImplicitOverride": true, // Report errors on overriding properties without the override keyword
+    "noPropertyAccessFromIndexSignature": true, // Ensure all properties are accessible
+    "noImplicitReturns": true, // Report error when not all code paths in function return a value
+    "noFallthroughCasesInSwitch": true, // Report errors for fallthrough cases in switch statements
+    "isolatedModules": true, // Ensure all files can be transpiled independently
+    "sourceMap": true, // Generates corresponding '.map' file
+    "declaration": false, // Generates corresponding '.d.ts' file
+    "experimentalDecorators": true, // Enables experimental support for decorators
+    "moduleResolution": "bundler", // Use bundler to resolve modules
     "lib": [
-      "ES2022",
+      "ES2022", // Include necessary library files
       "dom"
     ]
   },
@@ -28,6 +30,7 @@
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "strictTemplates": true,
+    "enableIvy": true // Enables Ivy rendering engine
   }
 }

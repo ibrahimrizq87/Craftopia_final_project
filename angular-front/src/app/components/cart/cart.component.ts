@@ -1,60 +1,58 @@
-import { Component } from '@angular/core';
-import { UserService } from '../../services/user.service';
-import { Router } from '@angular/router';
-import { CartListComponent } from './cart-list/cart-list.component';
-import { CartContentComponent } from "./cart-content/cart-content.component";
-import { RouterOutlet } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { CartItemService } from '../../services/cart.service';
+import { HttpErrorResponse } from '@angular/common/http';
+
+interface CartItem {
+  id: number;
+  product: {
+    id: number;
+    name: string;
+    price: number;
+    image: string; // Assuming this field exists in your product model
+  };
+  quantity: number;
+}
 
 @Component({
   selector: 'app-cart',
-  standalone: true,
-  imports: [
-    CartListComponent,
-    CartContentComponent,
-    RouterOutlet
-],
-providers: [UserService],
   templateUrl: './cart.component.html',
-  styleUrl: './cart.component.css'
+  styleUrls: ['./cart.component.css'],
 })
-export class CartComponent {
+export class CartComponent implements OnInit {
+  cartItems: CartItem[] = [];
 
-  user: any;
-  constructor(private userService: UserService, private router: Router ) { }
-
+  constructor(private cartItemService: CartItemService) {}
 
   ngOnInit(): void {
-    console.log(sessionStorage.getItem('authToken'));
-    if (sessionStorage.getItem('authToken')) {
+    this.getCartItems();
+  }
 
+  getCartItems(): void {
+    this.cartItemService.getCartItems().subscribe(
+      (items: CartItem[]) => {
+        this.cartItems = items;
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error fetching cart items:', error);
+      }
+    );
+  }
 
-      this.userService.getUser().subscribe(
-        response => {
+  removeCartItem(cartItemId: number): void {
+    this.cartItemService.removeCartItem(cartItemId).subscribe(
+      () => {
+        this.getCartItems(); // Refresh the cart items after removal
+      },
+      (error: HttpErrorResponse) => {
+        console.error('Error removing cart item:', error);
+      }
+    );
+  }
 
-
-        },
-        error => {
-          if (error.status === 400 || error.status === 500) {
-            console.error('A specific error occurred:', error);
-          } else if (error.status === 401) {
-            sessionStorage.removeItem('authToken');
-            // alert('need to log in first');
-            sessionStorage.setItem('loginSession', 'true');
-
-            this.router.navigate(['/login']);
-          } else {
-            console.error('An unexpected error occurred:', error);
-          }
-        }
-      );
-    } else {
-      // alert('need to log in first');
-      sessionStorage.setItem('loginSession', 'true');
-
-      this.router.navigate(['/login']);
-
-    }
-
-
+  calculateTotal(): number {
+    return this.cartItems.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
+      0
+    );
   }
 }

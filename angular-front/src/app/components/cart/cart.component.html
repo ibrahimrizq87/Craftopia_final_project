@@ -1,4 +1,20 @@
-<div class="cart-container my-5">
-    <app-cart-list />
-    <app-cart-content />
+<div class="cart-container">
+  <h2>Your Cart</h2>
+  <ul>
+    <li *ngFor="let item of cartItems">
+      <div class="cart-item">
+        <img [src]="item.product.image" alt="{{ item.product.name }}" />
+        <div class="item-details">
+          <h3>{{ item.product.name }}</h3>
+          <p>Price: ${{ item.product.price }}</p>
+          <p>Quantity: {{ item.quantity }}</p>
+        </div>
+        <button (click)="removeCartItem(item.id)">Remove</button>
+      </div>
+    </li>
+  </ul>
+
+  <div class="total">
+    <h3>Total: ${{ calculateTotal() }}</h3>
+  </div>
 </div>

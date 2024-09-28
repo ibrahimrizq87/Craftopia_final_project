@@ -22,6 +22,10 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('cart-items', CartItemController::class);
+});
+
 
 
 Route::post('users/login', [UserController::class, 'login']);
@@ -35,8 +39,22 @@ Route::post('/users/logout',
 Route::apiResource('users', UserController::class)->middleware('auth:sanctum');
 
 
+//cartitem
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('cart-items', CartItemController::class);
+});
+
+// route::get('/cart-items', [CartItemController::class, 'index']);
+
 Route::apiResource('added-offers', AddedOfferController::class);
-Route::apiResource('cart-items', CartItemController::class);
+// Route::apiResource('cart-items', CartItemController::class);
+//ahmed need tested it :
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/cart-items', [CartItemController::class, 'index']);
+    Route::post('/cart-items', [CartItemController::class, 'store']);
+    Route::delete('/cart-items/{cartItem}', [CartItemController::class, 'destroy']);
+});
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('customers', CustomerController::class);
 Route::apiResource('custom-orders', CustomOrderController::class);
@@ -46,7 +64,7 @@ Route::apiResource('order-items', OrderItemController::class);
 Route::apiResource('payment-requests', PaymentRequestController::class);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('products', ProductController::class)->only(['store', 'update', 'destroy']);
+Route::apiResource('products', ProductController::class)->only(['store', 'update', 'destroy']);
 });
 Route::apiResource('products', ProductController::class)->only(['index', 'show']);
 Route::get('products/byCategory/{category}', [ProductController::class, 'getProductsByCategory']);

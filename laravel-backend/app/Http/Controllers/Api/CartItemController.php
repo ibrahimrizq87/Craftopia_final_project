@@ -5,46 +5,98 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // Get all cart items for the logged-in user
     public function index()
     {
-        //
+        // $user = Auth::user();
+        // $cartItems = CartItem::with('product')->where('user_id', $user->id)->get();
+        // return response()->json($cartItems, 200);
+
+
+    try {
+        $cartItems = CartItem::with('product')->get(); // Eager load related products
+        return response()->json($cartItems);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Add item to cart
+
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         'product_id' => 'required|exists:products,id',
+    //         'quantity' => 'required|integer|min:1'
+    //     ]);
+
+    //     $user = Auth::user();
+        
+    //     // Check if the item already exists in the cart
+    //     $existingCartItem = CartItem::where('user_id', $user->id)
+    //                                 ->where('product_id', $request->product_id)
+    //                                 ->first();
+        
+    //     if ($existingCartItem) {
+    //         // Update the quantity if the item already exists
+    //         $existingCartItem->quantity += $request->quantity;
+    //         $existingCartItem->save();
+    //     } else {
+    //         // Create a new cart item
+    //         CartItem::create([
+    //             'user_id' => $user->id,
+    //             'product_id' => $request->product_id,
+    //             'quantity' => $request->quantity
+    //         ]);
+    //     }
+
+    //     return response()->json(['message' => 'Item added to cart'], 201);
+    // }
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1'
+        ]);
+    
+        $user = Auth::user();
+        
+        // Check if the item already exists in the cart
+        $existingCartItem = CartItem::where('user_id', $user->id)
+                                    ->where('product_id', $request->product_id)
+                                    ->first();
+        
+        if ($existingCartItem) {
+            // Update the quantity if the item already exists
+            $existingCartItem->quantity += $request->quantity;
+            $existingCartItem->save();
+        } else {
+            // Create a new cart item
+            CartItem::create([
+                'user_id' => $user->id,
+                'product_id' => $request->product_id,
+                'quantity' => $request->quantity
+            ]);
+        }
+    
+        return response()->json(['message' => 'Item added to cart'], 201);
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(CartItem $cartItem)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, CartItem $cartItem)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
+    
+    // Remove item from cart
     public function destroy(CartItem $cartItem)
     {
-        //
+        $user = Auth::user();
+
+        if ($cartItem->user_id !== $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $cartItem->delete();
+
+        return response()->json(['message' => 'Item removed from cart'], 200);
     }
 }
