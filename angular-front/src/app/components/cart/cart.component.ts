@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CartItemService } from '../../services/cart.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
+import { UserService } from '../../services/user.service';
+import {  Router,RouterModule } from '@angular/router';
+import { CustomerHeaderComponent } from '../customer-header/customer-header.component';
+
 interface CartItem {
   id: number;
   product: {
@@ -13,8 +17,16 @@ interface CartItem {
   quantity: number;
 }
 
+
+
 @Component({
   selector: 'app-cart',
+  standalone: true,
+  imports: [
+   CustomerHeaderComponent,
+   RouterModule
+],
+providers: [UserService],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.css'],
 })
