@@ -15,3 +15,22 @@ export interface OrderDetails {
     };
   }>;
 }
+  export interface Order {
+    customer: {
+      phone: number;
+      address: string;
+    };
+    paymentMethod: number;
+    orderItems: OrderItem[];
+  }
+  
+  export interface OrderItem {
+    product: {
+      name: string;
+      imageUrl: string;
+      price: number;
+    };
+    quantity: number;
+  }
+  
+

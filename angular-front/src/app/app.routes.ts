@@ -64,6 +64,7 @@ export const routes: Routes = [
     {path:"send", component:SendEmailComponent},
     {path:"reset", component:ResetPasswordComponent},
     {path:"order/view", component:ViewOrderComponent},
+    { path: 'order/view/:id', component: ViewOrderComponent },
     {path:"**",component:ErrorComponent}
 ];
 

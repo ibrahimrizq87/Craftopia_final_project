@@ -16,7 +16,7 @@ export class CustomerOrdersComponent implements OnInit {
   constructor(private orderService: OrderService, private router: Router) {}
 
   ngOnInit(): void {
-    console.log('Component initialized'); // Log on initialization
+    console.log('Component initialized'); 
     this.fetchOrders();
   }
 
@@ -36,7 +36,7 @@ export class CustomerOrdersComponent implements OnInit {
 
   calculateTotalPrice(orderItems: any[]): number {
     return orderItems.reduce((total, item) => {
-      const price = item.product?.price || 0; // Make sure `price` is correctly accessed
+      const price = item.product?.price || 0; 
       return total + (price * (item.quantity || 0));
     }, 0);
   }
@@ -60,7 +60,7 @@ export class CustomerOrdersComponent implements OnInit {
     this.orderService.cancelOrder(orderId).subscribe(
       () => {
         alert('Order canceled successfully!');
-        this.fetchOrders(); // Refresh the order list after cancellation
+        this.fetchOrders();
       },
       (error) => {
         console.error('Error canceling order:', error);

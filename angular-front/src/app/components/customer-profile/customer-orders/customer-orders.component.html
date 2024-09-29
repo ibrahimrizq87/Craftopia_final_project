@@ -16,7 +16,7 @@
         <tr *ngFor="let order of orders">
           <td>
             <ng-container *ngFor="let item of order.order_items">
-              {{ item.product?.name || 'N/A' }}<br> <!-- Ensure accessing `name` correctly -->
+              {{ item.product?.name || 'N/A' }}<br>
             </ng-container>
           </td>
           <td>
@@ -25,13 +25,13 @@
             </ng-container>
           </td>
           <td>
-            {{ calculateTotalPrice(order.order_items) | currency }} <!-- This should display the total correctly -->
+            {{ calculateTotalPrice(order.order_items) | currency }} 
           </td>
           
           <td>{{ order.created_at | date:'dd/MM/yyyy' }}</td>
           <td>{{ order.payment_status }}</td>
           <td>
-            <a routerLink="/order/view/{{ order.id }}" style="cursor:pointer;">
+            <a routerLink="/order/view/{{order.id}}" style="cursor:pointer;">
               <i class="fa-solid fa-eye px-2 fs-5 text-black" style="text-decoration: none;"></i>
             </a>
             <i class="fa-solid fa-trash px-2 fs-5" style="color:rgb(173, 4, 4)" (click)="cancelOrder(order.id)"></i>
