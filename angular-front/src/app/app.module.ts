@@ -1,20 +1,19 @@
-// src/app/app.module.ts
-import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http'; // Import HttpClientModule
+// import { NgModule } from '@angular/core';
+// import { BrowserModule } from '@angular/platform-browser';
+// import { HttpClientModule } from '@angular/common/http'; // Import HttpClientModule to enable HTTP requests
 
-import { AppComponent } from './app.component';
+// import { AppComponent } from './app.component'; // Import your root component
 
-@NgModule({
-  declarations: [
-    AppComponent,
-    // ... other components
-  ],
-  imports: [
-    BrowserModule,
-    HttpClientModule, // Add HttpClientModule here
-  ],
-  providers: [],
-  bootstrap: [AppComponent]
-})
-export class AppModule { }
+// @NgModule({
+//   declarations: [
+//     AppComponent,
+//     // ... other components that you have
+//   ],
+//   imports: [
+//     BrowserModule,
+//     HttpClientModule, // Add HttpClientModule here to use HttpClient service
+//   ],
+//   providers: [],
+//   bootstrap: [AppComponent] // Bootstrap your root component
+// })
+// export class AppModule { }

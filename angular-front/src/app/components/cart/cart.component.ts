@@ -1,22 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CartItemService } from '../../services/cart.service';
-import { HttpErrorResponse } from '@angular/common/http';
-
-interface CartItem {
-  id: number;
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    image: string; // Assuming this field exists in your product model
-  };
-  quantity: number;
-}
+import { CartItem } from '../../models/cart-item.model';  // Import the CartItem model
 
 @Component({
   selector: 'app-cart',
   templateUrl: './cart.component.html',
-  styleUrls: ['./cart.component.css'],
+  styleUrls: ['./cart.component.css']
 })
 export class CartComponent implements OnInit {
   cartItems: CartItem[] = [];
@@ -27,32 +16,50 @@ export class CartComponent implements OnInit {
     this.getCartItems();
   }
 
+  // Fetch cart items from the service
   getCartItems(): void {
     this.cartItemService.getCartItems().subscribe(
       (items: CartItem[]) => {
         this.cartItems = items;
       },
-      (error: HttpErrorResponse) => {
+      (error) => {
         console.error('Error fetching cart items:', error);
       }
     );
   }
 
+  // Increase the quantity of an item
+  increaseQuantity(item: CartItem): void {
+    if (item.quantity < item.stock) {
+      item.quantity++;
+    }
+  }
+
+  // Decrease the quantity of an item
+  decreaseQuantity(item: CartItem): void {
+    if (item.quantity > 1) {
+      item.quantity--;
+    }
+  }
+
   removeCartItem(cartItemId: number): void {
+    // Call the service to remove the cart item from the back-end
     this.cartItemService.removeCartItem(cartItemId).subscribe(
       () => {
-        this.getCartItems(); // Refresh the cart items after removal
+        // After successfully removing from the database, update the front-end
+        this.cartItems = this.cartItems.filter(item => item.id !== cartItemId);
       },
-      (error: HttpErrorResponse) => {
-        console.error('Error removing cart item:', error);
+      (error) => {
+        console.error('Error deleting cart item:', error);  // Handle any errors
       }
     );
   }
 
-  calculateTotal(): number {
-    return this.cartItems.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
-      0
-    );
-  }
+  // Calculate the total price of all cart items
+calculateTotal(): number {
+  return this.cartItems.reduce((total, item) => {
+    return total + ((item?.product?.price || 0) * item.quantity);
+  }, 0);
+}
+
 }

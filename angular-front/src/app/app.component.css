@@ -1,0 +1,38 @@
+
+/* Styles for cart items */
+ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  li {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+  }
+  
+  img {
+    width: 100px;
+    height: auto;
+    margin-right: 10px;
+  }
+  
+  button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  
+  button:disabled {
+    background-color: #ccc;
+  }
+  
+  div {
+    display: flex;
+    align-items: center;
+  }
+  
