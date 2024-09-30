@@ -1,40 +1,53 @@
-import { Component, Input } from '@angular/core';
-import { CustomerHeaderComponent } from "../../customer-header/customer-header.component";
-import { RouterModule } from '@angular/router';
-import { ListPartComponent } from '../../customer-profile/list-part/list-part.component';
-import {OrderItem} from '../../../order_items'
-// Define product interface
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { OrderService } from '../../../services/order.service';
 
+import { ProductService } from '../../../services/product.service';
+import { CommonModule } from '@angular/common';
+import { ListPartComponent } from '../../customer-profile/list-part/list-part.component';
 
 @Component({
   selector: 'app-view-order',
   standalone: true,
-  imports: [CustomerHeaderComponent, ListPartComponent, RouterModule],
   templateUrl: './view-order.component.html',
-  styleUrls: ['./view-order.component.css'] // Fixed typo from styleUrl to styleUrls
+  imports: [CommonModule, ListPartComponent]
 })
-export class ViewOrderComponent {
-  activeComponent: string = '';
+export class ViewOrderComponent implements OnInit {
+  order: any = {}; 
+  totalPrice: number = 0;
+  products: any;
 
-  // Receive order object from parent component
-  @Input() order: Order | undefined;
+  constructor(private route: ActivatedRoute, private orderService: OrderService, private productService: ProductService) {}
 
-  // Calculate total price, for example, including tax or any other additions if required
-  calculateTotalPrice(orderItems: OrderItem[] | undefined): number {
-    if (!orderItems) return 0;
-    const subtotal = this.calculateSubtotal(orderItems);
-    const tax = subtotal * 0.1; // 10% tax for example
-    return subtotal + tax;
+  ngOnInit(): void {
+    const orderId = this.route.snapshot.paramMap.get('id');
+
+    if (orderId !== null) {
+      this.orderService.getOrder(orderId).subscribe(data => {
+        this.order = data;
+        console.log(this.order); 
+        this.calculateTotalPrice();
+        
+     
+        this.productService.getProduct(orderId).subscribe((productsData: any) => {
+          this.products = productsData;
+          console.log(this.products);
+        }, (error: any) => {
+          console.error('Error fetching products:', error);
+        });
+      }, error => {
+        console.error('Error fetching order:', error);
+      });
+    }
   }
 
-  // Calculate subtotal of the order items
-  calculateSubtotal(orderItems: OrderItem[] | undefined): number {
-    if (!orderItems) return 0;
-    return orderItems.reduce((subtotal, item) => subtotal + (item.product.price * item.quantity), 0);
-  }
-
-  // Method to handle component visibility
-  showComponent(component: string) {
-    this.activeComponent = component;
+  calculateTotalPrice(): void {
+    if (this.order && this.order.orderItems) {
+      this.totalPrice = this.order.orderItems.reduce((total: number, item: any) => {
+        return total + (item.quantity * item.product.price);
+      }, 0);
+    } else {
+      this.totalPrice = 0;
+    }
   }
 }

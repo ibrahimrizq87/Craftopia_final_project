@@ -40,6 +40,8 @@ Route::post('users/login', [UserController::class, 'login']);
 
 Route::post('users/register', [UserController::class, 'register']);
 Route::get('users/me', [UserController::class, 'getUser'])->middleware('auth:sanctum');
+Route::get('/products/{id}', [ProductController::class, 'show']);
+
 
 Route::post('/users/logout',
     [UserController::class, 'logoutFromOneDevice'])

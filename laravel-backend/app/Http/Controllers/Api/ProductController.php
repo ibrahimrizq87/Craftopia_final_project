@@ -228,6 +228,7 @@ class ProductController extends Controller
     //     }
     
     //     return response()->json($category->products, 200);
+    
     return new ProductResource($product->load('category', 'user'));
 
 
@@ -243,7 +244,7 @@ class ProductController extends Controller
 
     public function restore($id)
     {
-        // Find the soft-deleted product by its ID
+      
         $product = Product::withTrashed()->find($id);
         
         if (!$product) {

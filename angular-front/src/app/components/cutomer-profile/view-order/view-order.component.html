@@ -1,43 +1,51 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12 col-md-4">
-        
             <app-list-part></app-list-part>
         </div>
         <div class="col-12 col-md-8 my-4 shadow-lg p-5">
             <div class="row my-5">
                 <div class="col-12 col-md-4 ps-4 pt-5 mx-3">
-                 
-                    <p class="pt-3">
-                        <strong>Phone:</strong> {{ order?.customer?.phone || 'N/A' }}
-                    </p>
-                    <p class="pt-3">
-                        <strong>Address:</strong> {{ order?.customer?.address || 'N/A' }}
-                    </p>
-                    <p class="pt-3">
-                        <strong>Payment Method:</strong> {{ order?.paymentMethod || 'N/A' }}
-                    </p>
+               
+                    <p class="pt-3"><strong>Phone:</strong> {{ order.phone || 'N/A' }}</p>
+                    <p class="pt-3"><strong>Address:</strong> {{ order.address || 'N/A' }}</p>
+                    <p class="pt-3"><strong>payment_status :</strong> {{ order.payment_status || 'N/A' }}</p>
+                    <p class="pt-3"><strong>Order Date:</strong> {{ order.created_at | date: 'dd/MM/yyyy' || 'N/A' }}</p>
+
                 </div>
 
-                <div class="col-12 col-md-8 w-50 mx-5 mt-5 p-3" style="border: 2px solid #b83807">
+                <div class="col-12 col-md-8 mx-5 mt-5 p-3" style="border:2px solid #b83807">
                     <div style="background-color: #ffffff;">
-                        <!-- Loop through order items -->
-                        <div *ngFor="let item of order?.orderItems; let i = index">
-                            <div class="d-flex align-items-center justify-content-between my-2">
-                                <div class="d-flex align-items-center">
-                                    <img [src]="item.product.imageUrl" style="height: 50px; width: 50px;" alt="Product Image">
-                                    <span class="ms-2">{{ item.product.name || 'Unnamed Product' }}</span>
-                                </div>
-                                <div class="ms-3">{{ item.quantity || 0 }} pcs</div>
-                                <div>{{ item.product.price || 0 }}$</div>
-                            </div>
-                        </div>
+                        <h3>Products</h3>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            
+                            
+                                   
+                                <tbody>
+                                    <ng-container *ngFor="let item of order.order_items">
+                                        <tr>
+                                            <td>{{ item.product_name || 'N/A' }}</td>
+                                            <td>{{ item.quantity || 0 }}</td>
+                                            <td>{{ item.price || 0 | currency }}</td>
+                                        </tr>
+                                    </ng-container>
+                                </tbody>
+                                 
+                         
+                        </table>
                         <hr class="my-4">
-
-                        <!-- Total -->
+                       
+                        <hr class="my-4">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>Total:</div>
-                            <div>{{ calculateTotalPrice(order?.orderItems) }}$</div>
+                            <div>{{ totalPrice | currency }}</div>
                         </div>
                     </div>
                 </div>

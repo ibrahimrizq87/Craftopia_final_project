@@ -4,6 +4,7 @@ import { SimilarItemsComponent } from "./similar-items/similar-items.component";
 import { ViewReviewsComponent } from "../view-reviews/view-reviews.component";
 import { ReviewComponent } from './review/review.component';
 
+
 @Component({
   selector: 'app-product-details',
   standalone: true,

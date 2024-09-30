@@ -47,16 +47,26 @@ class OrderController extends Controller
 
     }
 
-    public function show(Order $order)
-{
-    if ($order->user_id !== Auth::id()) {
-        return response()->json(['error' => 'Unauthorized'], 403);
-    }
-
-    return response()->json($order);
-}
 
 
+
+        public function show($id)
+        {
+           
+            $order = Order::with('orderItems.product')->find($id);
+        
+            if (!$order) {
+                return response()->json(['error' => 'Order not found'], 404);
+            }
+        
+          
+            if ($order->user_id !== Auth::id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        
+            return response()->json($order);
+        }
+        
 public function update(Request $request, Order $order)
 {
     if ($order->user_id !== Auth::id()) {
@@ -74,8 +84,7 @@ public function update(Request $request, Order $order)
         return response()->json(['errors' => $validator->errors()], 422);
     }
 
-    // لا تسمح بإلغاء الطلب إذا كان بالفعل ملغى أو تم تسليمه
-    if ($order->payment_status === 'canceled' || $order->payment_status === 'delivered') {
+    if ($order->payment_status === 'canceled' || $order->payment_status === 'payed') {
         return response()->json(['error' => 'Order cannot be canceled'], 422);
     }
 
