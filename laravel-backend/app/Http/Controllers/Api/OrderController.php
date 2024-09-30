@@ -84,9 +84,7 @@ public function update(Request $request, Order $order)
         return response()->json(['errors' => $validator->errors()], 422);
     }
 
-    if ($order->payment_status === 'canceled' || $order->payment_status === 'payed') {
-        return response()->json(['error' => 'Order cannot be canceled'], 422);
-    }
+   
 
     $order->update($request->only(['phone', 'address', 'total', 'payment_status']));
 

@@ -52,8 +52,18 @@ export class CustomerOrdersComponent implements OnInit {
 
   cancelOrder(orderId: string): void {
     const order = this.orders.find(order => order.id === orderId);
-    if (order.payment_status === 'canceled' || order.payment_status === 'delivered') {
-      alert('Cannot cancel this order as it is already canceled or delivered.');
+    if (!order) {
+      alert('Order not found!');
+      return;
+    }
+
+    if (order.payment_status === 'canceled') {
+      alert('This order is already canceled.');
+      return;
+    }
+
+    if (order.payment_status === 'payed') {
+      alert('This order has already been paid and cannot be canceled.');
       return;
     }
 
@@ -67,5 +77,4 @@ export class CustomerOrdersComponent implements OnInit {
         alert('Failed to cancel order: ' + (error.error.message || error.message));
       }
     );
-  }
-}
+  }}
