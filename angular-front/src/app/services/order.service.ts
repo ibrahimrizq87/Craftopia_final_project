@@ -15,7 +15,12 @@ export class OrderService {
     private apiUrl = environment.apiUrl+'/orders';
 
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {}
+
+    // Define the placeOrder method
+    placeOrder(orderData: { phone: string; address: string; total: number; items: { product_id: number; quantity: number; }[] }): Observable<any> {
+      return this.http.post(`${this.apiUrl}/orders`, orderData);
+    }
 
     getOrder(id: string): Observable<any> {
         const authToken = sessionStorage.getItem('authToken');

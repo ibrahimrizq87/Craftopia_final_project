@@ -12,8 +12,8 @@
 
     <!-- Quantity Controls with Increase and Decrease buttons -->
     <div>
-      <button (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1">-</button> 
-      <span>{{ item.quantity }}</span> 
+      <button (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1">-</button>
+      <span>{{ item.quantity }}</span>
       <button (click)="increaseQuantity(item)" [disabled]="item.quantity >= item.stock">+</button>
     </div>
 
@@ -24,3 +24,6 @@
 
 <!-- Total Price -->
 <h3>Total: ${{ calculateTotal() }}</h3>
+
+<!-- Place Order Button -->
+<button (click)="placeOrder()" [disabled]="cartItems.length === 0">Place Order</button>

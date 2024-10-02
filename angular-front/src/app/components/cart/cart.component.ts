@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CartItemService } from '../../services/cart.service';
-import { CartItem } from '../../models/cart-item.model';  // Import the CartItem model
+import { CartItem } from '../../models/cart-item.model';
 
 @Component({
   selector: 'app-cart',
@@ -16,7 +16,6 @@ export class CartComponent implements OnInit {
     this.getCartItems();
   }
 
-  // Fetch cart items from the service
   getCartItems(): void {
     this.cartItemService.getCartItems().subscribe(
       (items: CartItem[]) => {
@@ -28,14 +27,12 @@ export class CartComponent implements OnInit {
     );
   }
 
-  // Increase the quantity of an item
   increaseQuantity(item: CartItem): void {
     if (item.quantity < item.stock) {
       item.quantity++;
     }
   }
 
-  // Decrease the quantity of an item
   decreaseQuantity(item: CartItem): void {
     if (item.quantity > 1) {
       item.quantity--;
@@ -43,23 +40,37 @@ export class CartComponent implements OnInit {
   }
 
   removeCartItem(cartItemId: number): void {
-    // Call the service to remove the cart item from the back-end
-    this.cartItemService.removeCartItem(cartItemId).subscribe(
-      () => {
-        // After successfully removing from the database, update the front-end
-        this.cartItems = this.cartItems.filter(item => item.id !== cartItemId);
+    this.cartItemService.removeCartItem(cartItemId).subscribe(() => {
+      this.cartItems = this.cartItems.filter(item => item.id !== cartItemId);
+    });
+  }
+
+  calculateTotal(): number {
+    return this.cartItems.reduce((total, item) => {
+      const price = item?.product?.price ?? 0;
+      return total + (price * item.quantity);
+    }, 0);
+  }
+  
+
+  placeOrder(): void {
+    const orderData = {
+      items: this.cartItems.map(item => ({
+        product_id: item.product_id,
+        quantity: item.quantity
+      })),
+      total: this.calculateTotal()
+    };
+
+    this.cartItemService.placeOrder(orderData).subscribe(
+      response => {
+        console.log('Order placed successfully:', response);
+        // Clear cart after order is placed
+        this.cartItems = [];
       },
-      (error) => {
-        console.error('Error deleting cart item:', error);  // Handle any errors
+      error => {
+        console.error('Error placing order:', error);
       }
     );
   }
-
-  // Calculate the total price of all cart items
-calculateTotal(): number {
-  return this.cartItems.reduce((total, item) => {
-    return total + ((item?.product?.price || 0) * item.quantity);
-  }, 0);
-}
-
 }

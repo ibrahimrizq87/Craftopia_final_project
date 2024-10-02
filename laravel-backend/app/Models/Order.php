@@ -23,4 +23,11 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+    // use HasFactory;
+
+
+    // public function items()
+    // {
+    //     return $this->hasMany(OrderItem::class);
+    // }
 }
