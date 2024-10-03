@@ -97,5 +97,9 @@ class CartItemController extends Controller
 
     public function destroy($id)
     {
+        $cartItem = CartItem::findOrFail($id);
+        $cartItem->delete();
+
+        return response()->json(null, 204);
 }
 }
