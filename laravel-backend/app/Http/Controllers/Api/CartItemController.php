@@ -71,6 +71,28 @@ class CartItemController extends Controller
     
     public function checkout()
     {
+        $userId = auth()->id();
+        $cartItems = CartItem::where('user_id', $userId)->get();
+
+        
+        if ($cartItems->isEmpty()) {
+            return response()->json(['message' => 'Cart is empty'], 400);
+        }
+
+        
+        foreach ($cartItems as $cartItem) {
+            OrderItem::create([
+                'product_id' => $cartItem->product_id,
+                'quantity' => $cartItem->quantity,
+                'price' => $cartItem->product->price, 
+                
+            ]);
+
+           
+            $cartItem->delete();
+        }
+
+        return response()->json(['message' => 'Order placed successfully'], 200);
     }
 
     public function destroy($id)
