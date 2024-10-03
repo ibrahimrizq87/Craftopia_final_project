@@ -1,10 +1,9 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
 import { UserService } from '../../services/user.service';
-import { CartService } from '../../services/cart.service';
 import { Router, RouterModule } from '@angular/router';
 import { CustomerHeaderComponent } from '../customer-header/customer-header.component';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { CartService } from '../../services/cart.service';
+import { CommonModule, NgIfContext } from '@angular/common';
 
 @Component({
   selector: 'app-cart',
@@ -12,16 +11,19 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CustomerHeaderComponent,
     RouterModule,
-    CommonModule,
-    FormsModule
+    CommonModule
   ],
   providers: [UserService],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.css']
 })
 export class CartComponent {
+  totalPrice: number = 0;
+  totalPriceAfterOffers: number = 0;
+  totalOffers: number = 0;
+
+  cartItems: CartItem[] = [];
   user: any;
-  orderItems: any[] = [];
 
   constructor(
     private userService: UserService,
@@ -30,108 +32,169 @@ export class CartComponent {
   ) {}
 
   ngOnInit(): void {
-    this.checkAuthToken();
+    this.updateCartItems();
+    this.updateUser();
   }
-
-  private checkAuthToken(): void {
-    const authToken = sessionStorage.getItem('authToken');
-    if (authToken) {
-      this.getUser();
-    } else {
-      this.redirectToLogin();
-    }
-  }
-
-  private getUser(): void {
-    this.userService.getUser().subscribe(
-      response => {
-        this.user = response;
-        this.getOrderItems();
-      },
-      error => {
-        this.handleError(error);
-      }
-    );
-  }
-
-  private getOrderItems(): void {
-    this.cartService.getAllItems().subscribe(
-      (response: any) => {
-        if (response && response.length > 0) {
-          this.orderItems = response;
-          console.log(this.orderItems);
-        } else {
-          console.log('Your cart is empty.');
-        }
-      },
-      error => {
-        console.error('Error fetching order items:', error);
-      }
-    );
-  }
-
-  increaseQuantity(item: any): void {
-    item.quantity++;
-    this.updateOrderItem(item);
-  }
-
-  decreaseQuantity(item: any): void {
+  downQuantity(item: any) {
     if (item.quantity > 1) {
-      item.quantity--;
-      this.updateOrderItem(item);
+      this.cartService.updateItem({ 'stock': item.quantity - 1 }, item.id).subscribe(
+        response => {
+          item.quantity--;
+
+          this.totalPrice -= (item.product.price);
+          this.totalPriceAfterOffers -= (item.product.priceAfterOffers);
+          this.totalOffers -= (item.product.price - item.product.priceAfterOffers);
+
+        }, error => {
+          alert('error happend while updating\n theck your network please')
+          console.log('error updating::', error);
+        }
+      );
+
     }
   }
+  addQuantity(item: any) {
 
-  removeItem(item: any): void {
-    this.cartService.deleteItem(item.id).subscribe(
-      () => {
-        this.orderItems = this.orderItems.filter(orderItem => orderItem.id !== item.id);
-      },
-      error => {
-        console.error('Error removing item:', error);
-      }
-    );
-  }
+    if (item.product.stock > item.quantity) {
 
-  calculateTotal(): number {
-    return this.orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  }
+      this.cartService.updateItem({ 'stock': item.quantity + 1 }, item.id).subscribe(
+        response => {
+          item.quantity++;
+          this.totalPrice += (item.product.price);
+          this.totalPriceAfterOffers += (item.product.priceAfterOffers);
+          this.totalOffers += (item.product.price - item.product.priceAfterOffers);
 
-  private updateOrderItem(item: any): void {
-    const updatedData = { quantity: item.quantity };
-    this.cartService.updateItem(updatedData, item.id).subscribe(
-      () => {
-        console.log('Item updated successfully');
-      },
-      error => {
-        console.error('Error updating item:', error);
-      }
-    );
-  }
+        }, error => {
+          alert('error happend while updating\n theck your network please')
+          console.log('error updating::', error);
+        }
+      );
 
-  processCheckout(): void {
-    this.cartService.checkout().subscribe(
-      () => {
-        console.log('Order placed successfully');
-        this.router.navigate(['/checkout']);
-      },
-      error => {
-        console.error('Error during checkout:', error);
-      }
-    );
-  }
-
-  private redirectToLogin(): void {
-    sessionStorage.setItem('loginSession', 'true');
-    this.router.navigate(['/login']);
-  }
-
-  private handleError(error: any): void {
-    if (error.status === 401) {
-      sessionStorage.removeItem('authToken');
-      this.redirectToLogin();
     } else {
-      console.error('An unexpected error occurred:', error);
+      alert('no enough products in our stock\n max is: ' + item.product.stock);
     }
   }
+
+
+  deleteItem(item: any) {
+    this.cartService.deleteItem(item.id).subscribe(
+      response => {
+        alert('deleted successfully');
+
+        this.updateCartItems();
+      }, error => {
+        alert('an error happend!!');
+        console.log('an error happend::', error);
+      }
+    );
+  }
+  updateUser() {
+
+    console.log(sessionStorage.getItem('authToken'));
+    if (sessionStorage.getItem('authToken')) {
+      this.userService.getUser().subscribe(
+        response => {
+          this.userService.setUser(response.user);
+        },
+        error => {
+          if (error.status === 400 || error.status === 500) {
+            console.error('A specific error occurred:', error);
+          } else if (error.status === 401) {
+            sessionStorage.removeItem('authToken');
+            sessionStorage.setItem('loginSession', 'true');
+            this.router.navigate(['/login']);
+          } else {
+            console.error('An unexpected error occurred:', error);
+          }
+        }
+      );
+    } else {
+      sessionStorage.setItem('loginSession', 'true');
+      this.router.navigate(['/login']);
+
+    }
+  }
+
+  
+  updateCartItems() {
+    this.cartService.getAllItems().subscribe(
+      response => {
+        this.cartItems = response.data;
+
+        this.cartItems.forEach(item => {
+          item.product.priceAfterOffers = item.product.price;
+          item.product.totalOffers = 0;
+
+          item.product.addedOffers.forEach(offerAdded => {
+            const endDate = new Date(offerAdded.offer.end_date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (endDate.getTime() >= today.getTime()) {
+              item.product.totalOffers += offerAdded.offer.discount;
+              item.product.priceAfterOffers -= (offerAdded.offer.discount / 100) * item.product.price;
+            }
+
+          });
+
+          this.totalPrice += (item.product.price) * item.quantity;
+          this.totalPriceAfterOffers += (item.product.priceAfterOffers) * item.quantity;
+          this.totalOffers += (item.product.price - item.product.priceAfterOffers) * item.quantity;
+
+
+        });
+
+
+        console.log('my cart data::', response);
+      }, error => {
+        console.log('error happend', error);
+        if (error.status === 401) {
+          sessionStorage.removeItem('authToken');
+          sessionStorage.setItem('loginSession', 'true');
+          this.router.navigate(['/login']);
+        }
+      }
+    );
+  }
+}
+
+
+
+interface Offer {
+  id: number;
+  start_date: string;
+  end_date: string;
+  discount: number;
+}
+
+interface AddedOffer {
+  id: number;
+  offer: Offer;
+  offer_id: number;
+  product_id: number;
+}
+
+interface Product {
+  id: number;
+  product_name: string;
+  description: string;
+  price: number;
+  stock: number;
+  cover_image: string;
+  size: string;
+  material: string;
+  video: string;
+
+  totalOffers: number;
+  priceAfterOffers: number;
+
+  addedOffers: AddedOffer[];
+}
+
+interface CartItem {
+  id: number;
+  quantity: number;
+  user_id: number;
+  product_id: number;
+  product: Product;
 }

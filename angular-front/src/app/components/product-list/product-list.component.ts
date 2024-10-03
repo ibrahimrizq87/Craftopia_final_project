@@ -7,6 +7,10 @@ import { RouterModule} from '@angular/router';
 import { CategoryService } from '../../services/category.service';
 import { Router } from '@angular/router';
 import { CustomerHeaderComponent } from "../customer-header/customer-header.component";
+import { WishListService } from '../../services/wishlist.service';
+import { NgxPaginationModule } from 'ngx-pagination';
+
+
 // import { Product } from "../../models/product.model";
 
 @Component({
@@ -16,26 +20,24 @@ import { CustomerHeaderComponent } from "../customer-header/customer-header.comp
     ProductDetailsComponent,
     CommonModule,
     RouterModule,
-    CustomerHeaderComponent
+    CustomerHeaderComponent,
+    NgxPaginationModule
 ],
 
 
 
-  // providers: [ProductService ],
   templateUrl: './product-list.component.html',
 })
 
 export class ProductListComponent {
   products: Product[] = []; 
+  page: number = 1;              
+  itemsPerPage: number = 20; 
   category :any;
   noProductsTemplate: TemplateRef<NgIfContext<any>> | null | undefined;
-  constructor(private productService: ProductService ,private categoryService: CategoryService,private router: Router) { }
+  constructor(private productService: ProductService ,private categoryService: CategoryService,private router: Router,private wishListService: WishListService) { }
   
-  
-  // onCategoryClick(category: any): void {
-  //   this.categoryService.setCategory(category);
-  //   this.router.navigate(['/products']);
-  // }
+
   moveToCategory(){
     this.router.navigate(['/category']);
 
@@ -52,8 +54,23 @@ export class ProductListComponent {
 if(this.category){
   this.productService.getProductsByCategory(this.category.id).subscribe(
     response => {
-      this.products = response.data;
-      
+      this.products = response.data; 
+      this.products.forEach(product=>{
+        product.priceAfterOffers = product.price;
+        product.totalOffers=0;  
+        
+      product.addedOffers.forEach(offerAdded => {
+        const endDate = new Date(offerAdded.offer.end_date); 
+        const today = new Date(); 
+        today.setHours(0, 0, 0, 0); 
+
+if (endDate.getTime() >= today.getTime()) { 
+  product.totalOffers +=offerAdded.offer.discount;
+  product.priceAfterOffers -= (offerAdded.offer.discount/100) *product.price;
+}
+
+      });
+    });
       // console.log('addedOffers:', this.products.addedOffers);
       // console.log('offer:', this.products.addedOffers.offer);
 
@@ -80,15 +97,11 @@ if(this.category){
   this.productService.getAllProducts().subscribe(
     response => {
       this.products = response.data; 
-
-
-      console.log('products:', this.products);
       this.products.forEach(product=>{
         product.priceAfterOffers = product.price;
         product.totalOffers=0;  
         
       product.addedOffers.forEach(offerAdded => {
-        console.log('discount:', offerAdded.offer.discount);
         const endDate = new Date(offerAdded.offer.end_date); 
         const today = new Date(); 
         today.setHours(0, 0, 0, 0); 
@@ -115,14 +128,13 @@ if (endDate.getTime() >= today.getTime()) {
       }
     }
   );
-
-
+  
+  
 }
 
   }
 }
 
-// Interface for Offer data
 interface Offer {
   id: number;
   discount: number;
@@ -130,7 +142,6 @@ interface Offer {
   end_date: string;
 }
 
-// Interface for each item in addedOffers
 interface OfferItem {
   id: number;
   offer_id: number;
@@ -140,7 +151,6 @@ interface OfferItem {
   offer: Offer;
 }
 
-// Interface for the Product User
 interface User {
   id: number;
   name: string;
@@ -149,7 +159,6 @@ interface User {
   role: string;
 }
 
-// Interface for the Product
 interface Product {
   id: number;
   product_name: string;

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\CartItem;
-use App\Models\OrderItem;
 use App\Models\Product;
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Http\Resources\CartItemResource;
 
 class CartItemController extends Controller
 {
@@ -19,40 +22,63 @@ class CartItemController extends Controller
     
         return response()->json($cartItems); 
     }
+    public function getMyItems()
+    {
+        try{
+        $cartItems = CartItem::with('product','product.addedOffers')->where('user_id',Auth::id())->get();
+        return CartItemResource::collection($cartItems);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+    }
     
-    
-
-    
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-       
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-             
-            
+        try{
+
+     
+        $std_validator = Validator::make($request->all(), [
+            'product_id' => 'required|exists:products,id', 
+            'quantity' => 'required|numeric|min:1', 
         ]);
+    if ($std_validator->fails()) {
+        return response()->json(['errors' => $std_validator->errors()], 400);
+    }
+    $product = Product::find($request->product_id);
+    if(!$product){
+        return response()->json(['errors' => "product not found"], 404);
 
-        $userId = auth()->id();
-      
-        $cartItem = CartItem::where('user_id', $userId)
-                            ->where('product_id', $request->product_id)
-                            ->first();
+    }
+    
+    if($product->stock < $request->quantity){
+        return response()->json(['errors' => "no enough product availbel in stock"], 409);
 
-        if ($cartItem) {
-           
-            $cartItem->quantity += $request->quantity;
-            $cartItem->save();
-        } else {
-           
-            CartItem::create([
-                'user_id' => $userId,
-                'product_id' => $request->product_id,
-                'quantity' => $request->quantity,
-            ]);
-        }
+    }
 
-        return response()->json(['message' => 'Product added to cart successfully'], 201);
+    $exists = CartItem::where('product_id', $request->product_id)
+    ->where('user_id', Auth::id())
+    ->exists(); 
+
+if ($exists) {
+    return response()->json(['errors' => "Item already added to cart"], 403);
+}
+    
+    $cartItem = new CartItem();
+    $cartItem->product_id = $request->product_id;
+
+    $cartItem->user_id = Auth::id();
+    $cartItem->quantity = $request->quantity;
+    $cartItem->save();
+    return response()->json(['message' => "added successfully"], 200);
+
+    return response()->json(['message' => "added successfully"], 200);
+
+} catch (\Exception $e) {
+    return response()->json(['error' => $e->getMessage()], 500);
+}
     }
 
     public function updateCartItem(Request $request, CartItem $cartItem)
@@ -71,28 +97,28 @@ class CartItemController extends Controller
     
     public function checkout()
     {
-        $userId = auth()->id();
-        $cartItems = CartItem::where('user_id', $userId)->get();
+        try{
 
-        
-        if ($cartItems->isEmpty()) {
-            return response()->json(['message' => 'Cart is empty'], 400);
-        }
-
-        
-        foreach ($cartItems as $cartItem) {
-            OrderItem::create([
-                'product_id' => $cartItem->product_id,
-                'quantity' => $cartItem->quantity,
-                'price' => $cartItem->product->price, 
-                
+     
+            $std_validator = Validator::make($request->all(), [
+                'stock' => 'required|numeric|min:1', 
             ]);
-
-           
-            $cartItem->delete();
+        if ($std_validator->fails()) {
+            return response()->json(['errors' => $std_validator->errors()], 400);
         }
+        if($cartItem->product->stock < $request->stock){
+            return response()->json(['errors' => "no enough product availbel in stock"], 409);
+        }
+        $cartItem->quantity = $request->stock;
+        $cartItem->save();
+        return response()->json(['message' => 'updated successfully' , 'stock'=> $request->stock], 200);
 
-        return response()->json(['message' => 'Order placed successfully'], 200);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+       
+
     }
 
     public function destroy($id)

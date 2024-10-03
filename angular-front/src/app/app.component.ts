@@ -1,14 +1,21 @@
-// src/app/app.component.ts
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { AdminPageComponent } from './components/admin-page/admin-page.component';
+import { CustomerService } from './services/customer.service';
+import {SellerPageComponent } from './components/seller-page/seller-page.component';
+import { CartService } from './services/cart.service';
 import { CategoryService } from './services/category.service';
 import { ProductService } from './services/product.service';
 import { WishListService } from './services/wishlist.service';
 import { ReviewService } from './services/review.service';
 import { UserService } from './services/user.service';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { SellerService } from './services/seller.service';
+import { OrderService } from './services/order.service';
+
 
 @Component({
   selector: 'app-root',
@@ -17,21 +24,30 @@ import { FormsModule } from '@angular/forms';
     RouterOutlet,
     HeaderComponent,
     FooterComponent,
-    FormsModule
+    FormsModule,
+    CommonModule,
+    AdminPageComponent,
+    SellerPageComponent
   ],
   providers: [
+    CustomerService,
     CategoryService,
     ProductService,
     WishListService,
     ReviewService,
-    UserService
-  ],
+    UserService,
+    SellerService,
+    CartService,
+    OrderService,
+],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   user: any;
   isLogged: Boolean = false; 
+  dashboard: Boolean = false; 
+
 
   title = 'angular-front';
 
@@ -50,6 +66,9 @@ export class AppComponent {
         response => {
     
           this.user = response.data;
+          if (this.user.role === 'seller' || this.user.role === 'admin'){
+            this.dashboard =true;
+          }
           this.userService.setUser(this.user);
           
         },

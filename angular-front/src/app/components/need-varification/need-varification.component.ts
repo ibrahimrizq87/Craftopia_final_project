@@ -1,15 +1,29 @@
 import { Component } from '@angular/core';
 import { UserService } from '../../services/user.service';
 import { Router } from '@angular/router';
+import { AnimationOptions, LottieComponent } from 'ngx-lottie';
+import { AnimationItem } from 'lottie-web';
 
 @Component({
   selector: 'app-need-varification',
   standalone: true,
-  imports: [],
+  imports: [LottieComponent],
   templateUrl: './need-varification.component.html',
   styleUrl: './need-varification.component.css'
 })
 export class NeedVarificationComponent {
+  private successAnimationItem: AnimationItem | undefined;
+
+  successAnimationOptions: AnimationOptions = {
+    path: 'animations/email.json',
+    loop: true,
+    autoplay: true
+  };
+
+  successAnimationCreated(animationItem: AnimationItem): void {
+    this.successAnimationItem = animationItem;
+  }
+
   user: any;
   isLogged: Boolean = false;
   constructor(
@@ -18,9 +32,9 @@ export class NeedVarificationComponent {
   ) { }
 
   resendVerificationEmail() {
-    this.userService.resendVarification().subscribe(
+    this.userService.resendVarification(localStorage.getItem('tockenForVarification')).subscribe(
       response => {
-alert(response.message);
+        alert(response.message);
         
     console.log(response);
         },error => {    
@@ -36,11 +50,22 @@ alert(response.message);
 
   ngOnInit(): void {
 
-    this.updateUser();
+    if (localStorage.getItem('needVarification')){
+
+    }else{
+      this.updateUser();
+    }
+
   }
+
   reloadPage(): void {
 
-    window.location.reload();  
+    // window.location.reload();  
+    localStorage.removeItem('needVarification');
+    localStorage.removeItem('tockenForVarification');
+
+    this.router.navigate(['/login']);
+
 
   }
   updateUser() {
@@ -58,7 +83,8 @@ alert(response.message);
             this.user = response.data;
             console.log(this.user)
             if (this.user.email_verified_at){
-              this.router.navigate(['/home']);
+              this.router.navigate(['/login']);
+              localStorage.removeItem('needVarification');
         
             }
 
@@ -88,5 +114,7 @@ alert(response.message);
       this.router.navigate(['/login']);
     }
   }
+
+
 
 }

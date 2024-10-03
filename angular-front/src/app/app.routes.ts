@@ -10,11 +10,10 @@ import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { ContactComponent } from './components/contact/contact.component';
 import { PaymentComponent } from './components/payment/payment.component';
-import { AddProductComponent } from './components/add-product/add-product.component';
-import { UpdateProductComponent } from './components/update-product/update-product.component';
+import { AddProductComponent } from './components/seller-page/add-product/add-product.component';
+import { UpdateProductComponent } from './components/seller-page/update-product/update-product.component';
 import { EditProfileComponent } from './components/edit-profile/edit-profile.component';
 import { CategoryDetailsComponent } from './components/category-details/category-details.component';
-import { CustomerPageComponent } from './components/customer-page/customer-page.component';
 import { CustomerProfileComponent } from './components/customer-profile/customer-profile.component';
 import { GuestHeaderComponent } from './components/guest-header/guest-header.component';
 import { GuestPageComponent } from './components/guest-page/guest-page.component';
@@ -31,6 +30,11 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 import { AdminPageComponent } from './components/admin-page/admin-page.component';
 import { Component } from '@angular/core';
 import { ViewOrderComponent } from './components/cutomer-profile/view-order/view-order.component';
+import { LoadingComponent } from './components/loading/loading.component';
+import { AdminViewProductComponent } from './components/admin-page/admin-view-product/admin-view-product.component';
+import { AddCategoryComponent } from './components/admin-page/add-category/add-category.component';
+import { UpdateCategoryComponent } from './components/admin-page/update-category/update-category.component';
+import { AdminViewOrderComponent } from './components/admin-page/admin-view-order/admin-view-order.component';
 
 
 export const routes: Routes = [
@@ -50,12 +54,11 @@ export const routes: Routes = [
     {path:"update-product",component:UpdateProductComponent},
     {path:"category/items", component:CategoryDetailsComponent},
     {path:"customer/profile", component:CustomerProfileComponent},
-    {path:"edit-profile", component:EditProfileComponent},
-    {path:"guest-header", component:GuestHeaderComponent},
-    {path:"customer/page", component:CustomerPageComponent},
-    {path:"guest/page", component: GuestPageComponent},
-    {path:"seller/page", component:SellerPageComponent},
-    {path:"admin/page",component:AdminPageComponent},
+    // {path:"edit-profile", component:EditProfileComponent},
+    // {path:"guest-header", component:GuestHeaderComponent},
+    // {path:"guest/page", component: GuestPageComponent},
+    // {path:"seller/page", component:SellerPageComponent},
+    // {path:"admin/page",component:AdminPageComponent},
     {path:"wishlist", component:WishlistComponent},
     {path:"manage/account", component:CustomerMAccountComponent},
     {path:"checkout", component:CheckoutComponent},

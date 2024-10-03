@@ -5,7 +5,7 @@ import { ReviewComponent } from "../product-details/review/review.component";
 import { ViewReviewsComponent } from "../view-reviews/view-reviews.component";
 import { ProductDetailsComponent } from '../product-details/product-details.component';
 import { ProductService } from '../../services/product.service';
-import { CategoryService } from '../../services/category.service';
+import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
 import { WishListService } from '../../services/wishlist.service';
 import { ReviewService } from '../../services/review.service';
@@ -50,7 +50,8 @@ export class ViewProductComponent {
     private userService: UserService,
     private router: Router,
     private reviewService: ReviewService,
-    private wishListService: WishListService) { }
+    private wishListService: WishListService,
+  private cartService:CartService) { }
 
     onProductClick(product: any) {
       this.productService.setProduct(product);
@@ -80,7 +81,29 @@ export class ViewProductComponent {
   onQuantityChange(value: string) {
     console.log('Quantity changed:', value);
   }
-  addToCart() { }
+  addToCart() {
+this.cartService.addItem({'product_id':this.product.id , 'quantity' :this.quantity}).subscribe(
+  response=>{
+    alert('added successfully to your cart');
+console.log(response);
+  },error=>{
+
+console.log('error Happend::',error);
+if(error.status === 401){
+
+  sessionStorage.removeItem('authToken');
+  sessionStorage.setItem('loginSession', 'true');
+
+  this.router.navigate(['/login']);
+}else if(error.status === 403){
+  alert("this product is already in your cart\n check your cart");
+}else{
+  alert('some error happend');
+}
+  }
+  
+);
+   }
 
 
 
@@ -89,6 +112,29 @@ export class ViewProductComponent {
   addToWishList() {
     const formData = new FormData();
     formData.append('product_id', this.product.id);
+
+    if (this.addToWish){
+      this.wishListService.deleteWishlistItem(this.product.id).subscribe(
+        response => {
+          alert('removesd from wishlist successfully');
+          this.addToWish = false;
+
+        }, error => {
+          alert('some error happend');
+          if (error.status === 400 || error.status === 500) {
+            console.error('A specific error occurred:', error);
+          } else if (error.status === 401) {
+            sessionStorage.removeItem('authToken');
+            sessionStorage.setItem('loginSession', 'true');
+  
+            this.router.navigate(['/login']);
+          } else {
+            console.error('An unexpected error occurred:', error);
+          }
+  
+        }
+      );
+    }else{
     this.wishListService.addItem(formData).subscribe(
       response => {
         console.log(response);
@@ -108,6 +154,7 @@ export class ViewProductComponent {
         }
       }
     );
+  }
   }
 
 
@@ -204,7 +251,6 @@ console.log('in my wish list?????',response.message);
 }
   deleteReview(review:any){
     this.updateUser(review);
-// console.log(review);
   }
 
 
@@ -215,7 +261,6 @@ console.log('in my wish list?????',response.message);
         this.stars=0;
 
         this.reviews.forEach(review => {
-          console.log('raatdgasdbjas::::::',review.rating);
           this.stars += review.rating;
 
         });
@@ -278,7 +323,7 @@ this.stars = 0;
     this.showReview = !this.showReview;
   }
 
-
+  
 
   updateUser(review:any) {
 
@@ -321,6 +366,9 @@ this.stars = 0;
             }
           )
       }
+
+
+      
       
     } else {
       sessionStorage.removeItem('authToken');
@@ -328,7 +376,7 @@ this.stars = 0;
       this.router.navigate(['/login']);
     }
   }
-
+  
 
 
 
