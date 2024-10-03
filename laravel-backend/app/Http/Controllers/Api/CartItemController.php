@@ -3,48 +3,42 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\CartItem;
 use Illuminate\Http\Request;
+use App\Models\CartItem;
+use App\Models\OrderItem;
+use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
 
 class CartItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+  
     public function index()
     {
-        //
+        $userId = auth()->id(); 
+        $cartItems = CartItem::where('user_id', $userId)->with('product')->get();
+    
+        return response()->json($cartItems); 
     }
+    
+    
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
-        //
+       
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(CartItem $cartItem)
+    public function updateCartItem(Request $request, CartItem $cartItem)
     {
-        //
+    
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, CartItem $cartItem)
+    
+    public function checkout()
     {
-        //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(CartItem $cartItem)
+    public function destroy($id)
     {
-        //
-    }
+}
 }

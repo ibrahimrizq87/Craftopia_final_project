@@ -13,13 +13,13 @@ export class CartService {
 
     constructor(private http: HttpClient) { }
 
-    getItem(id: string): Observable<any> {
+    getItem(productId: string): Observable<any> {
         const authToken = sessionStorage.getItem('authToken');
 
         const headers = new HttpHeaders({
           'Authorization': `Bearer ${authToken}`
         });
-        return this.http.get(`${this.apiUrl}/${id}`, { headers });
+        return this.http.get(`${this.apiUrl}/${productId}`, { headers });
     }
 
 
@@ -63,8 +63,16 @@ export class CartService {
 
       return this.http.patch(`${this.apiUrl}/${id}`,itemData, { headers });
     }
+    checkout(): Observable<any> {
+      const authToken = sessionStorage.getItem('authToken');
+      const headers = new HttpHeaders({
+        'Authorization': `Bearer ${authToken}`
+      });
+      const checkoutUrl = environment.apiUrl + '/checkout';
+      return this.http.post(checkoutUrl, {}, { headers });
+    }
+  }
 
-}
 
 
 
