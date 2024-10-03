@@ -26,6 +26,33 @@ class CartItemController extends Controller
     public function store(Request $request)
     {
        
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+             
+            
+        ]);
+
+        $userId = auth()->id();
+      
+        $cartItem = CartItem::where('user_id', $userId)
+                            ->where('product_id', $request->product_id)
+                            ->first();
+
+        if ($cartItem) {
+           
+            $cartItem->quantity += $request->quantity;
+            $cartItem->save();
+        } else {
+           
+            CartItem::create([
+                'user_id' => $userId,
+                'product_id' => $request->product_id,
+                'quantity' => $request->quantity,
+            ]);
+        }
+
+        return response()->json(['message' => 'Product added to cart successfully'], 201);
     }
 
     public function updateCartItem(Request $request, CartItem $cartItem)
