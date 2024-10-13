@@ -47,7 +47,7 @@ class PaymentController extends Controller
             $offersPrecintage = ($totalOffers /100);
             $priceAfterOffers = $product->price - ($product->price *  $offersPrecintage); 
             $productTotal = $priceAfterOffers * $item->quantity;     
-            $seller->increment('total_sales', $productTotal );
+            //$seller->increment('total_sales', $productTotal );
         }
         return view('payment_done');
 
@@ -84,10 +84,13 @@ class PaymentController extends Controller
             
 
              if (!$order) {
-                return response()->json(['success' => false, 'error' => 'order not found'], 404);
+                return response()->json(['error' => 'order not found'], 404);
             }
 
           
+            if ($order->payment_status == 'payed') {
+                return response()->json([ 'error' => 'order is already payed'], 403);
+            }
 
             $amount = $order->total * 100;
             $message =''; 

@@ -43,6 +43,7 @@ user:any;
   }
   ngOnInit(): void {
     this.updateUser();
+    console.log('i am herer');
   }
 
   updateUser() {
@@ -80,4 +81,5 @@ user:any;
       this.router.navigate(['/login']);
     }
   }
+  
 }

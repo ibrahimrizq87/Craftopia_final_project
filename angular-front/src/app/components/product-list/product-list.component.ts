@@ -7,16 +7,24 @@ import { RouterModule} from '@angular/router';
 import { CategoryService } from '../../services/category.service';
 import { Router } from '@angular/router';
 import { CustomerHeaderComponent } from "../customer-header/customer-header.component";
+import { WishListService } from '../../services/wishlist.service';
+import { NgxPaginationModule } from 'ngx-pagination';
+import { CartService } from '../../services/cart.service';
+
+import { FormsModule } from '@angular/forms';
+
 // import { Product } from "../../models/product.model";
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
   imports: [
+    FormsModule,
     ProductDetailsComponent,
     CommonModule,
     RouterModule,
-    CustomerHeaderComponent
+    CustomerHeaderComponent,
+    NgxPaginationModule
 ],
 
 
@@ -26,10 +34,80 @@ import { CustomerHeaderComponent } from "../customer-header/customer-header.comp
 
 export class ProductListComponent {
   products: Product[] = []; 
+
+  page: number = 1;              
+  itemsPerPage: number = 20; 
   category :any;
+
+  filteredProducts: any[] = [];
+  priceFrom: number  = 0;
+  priceTo: number = 0;
+  searchTerm: string = '';
+  searchCriteria: string = 'name'; 
+
   noProductsTemplate: TemplateRef<NgIfContext<any>> | null | undefined;
-  constructor(private productService: ProductService ,private categoryService: CategoryService,private router: Router) { }
+  constructor(
+    private productService: ProductService ,
+    private categoryService: CategoryService,
+    private router: Router,
+    private wishListService: WishListService,
+    private cartService:CartService
+  ) { }
   
+
+
+  search() {
+    this.filteredProducts = this.products;
+
+    if (this.searchCriteria === 'name' && this.searchTerm) {
+        this.filteredProducts = this.filteredProducts.filter(product =>
+            product.product_name.toLowerCase().includes(this.searchTerm.toLowerCase())
+        );
+    } else if (this.searchCriteria === 'category' && this.searchTerm) {
+        this.filteredProducts = this.filteredProducts.filter(product =>
+            product.category.category_name.toLowerCase().includes(this.searchTerm.toLowerCase())
+        );
+    } else if (this.searchCriteria === 'price') {
+        if (this.priceFrom <= this.priceTo ) {
+            this.filteredProducts = this.filteredProducts.filter(product =>
+                product.priceAfterOffers !== null && 
+                product.priceAfterOffers >= this.priceFrom && 
+                product.priceAfterOffers <= this.priceTo
+            );
+        }else{
+          alert('the from price must be less than the to price');
+        }
+    }
+
+    this.page = 1; 
+}
+
+
+  addToCart(product:any) {
+    this.cartService.addItem({'product_id':product.id , 'quantity' : 1 }).subscribe(
+      response=>{
+        alert('added successfully to your cart');
+        this.router.navigate(['/cart']);
+    
+    console.log(response);
+      },error=>{
+    
+    console.log('error Happend::',error);
+    if(error.status === 401){
+    
+      sessionStorage.removeItem('authToken');
+      sessionStorage.setItem('loginSession', 'true');
+    
+      this.router.navigate(['/login']);
+    }else if(error.status === 403){
+      alert("this product is already in your cart\n check your cart");
+    }else{
+      alert('some error happend');
+    }
+      }
+      
+    );
+       }
 
   moveToCategory(){
     this.router.navigate(['/category']);
@@ -47,7 +125,7 @@ export class ProductListComponent {
 if(this.category){
   this.productService.getProductsByCategory(this.category.id).subscribe(
     response => {
-      this.products = response.data;
+      this.categoryService.setCategory(undefined);
       this.products = response.data; 
       this.products.forEach(product=>{
         product.priceAfterOffers = product.price;
@@ -60,23 +138,19 @@ if(this.category){
 
 if (endDate.getTime() >= today.getTime()) { 
   product.totalOffers +=offerAdded.offer.discount;
-  product.priceAfterOffers -= (offerAdded.offer.discount/100) *product.price;
+  product.priceAfterOffers -= Math.floor((offerAdded.offer.discount / 100) *product.price);
+
 }
 
       });
     });
-      // console.log('addedOffers:', this.products.addedOffers);
-      // console.log('offer:', this.products.addedOffers.offer);
 
-      // this.products.addedOffers.forEach((offerAdded: { discount: number ,start_date: string ,end_date: string  }) => {
-      //   console.log('discount:', offerAdded.discount);
-      // });
       
       
       
 
-      console.log('response' , response);
-      console.log(response.data.email);
+    this.filteredProducts =this.products;
+
     },
     error => {
       if (error.status === 400 || error.status === 500) {
@@ -102,17 +176,13 @@ if (endDate.getTime() >= today.getTime()) {
 
 if (endDate.getTime() >= today.getTime()) { 
   product.totalOffers +=offerAdded.offer.discount;
-  product.priceAfterOffers -= (offerAdded.offer.discount/100) *product.price;
+  product.priceAfterOffers -= Math.floor((offerAdded.offer.discount / 100) *product.price);
 }
 
       });
     });
-    console.log('products after:', this.products);
+    this.filteredProducts =this.products;
 
-      
-
-      console.log('response' , response);
-      console.log(response.data.email);
     },
     error => {
       if (error.status === 400 || error.status === 500) {
@@ -122,8 +192,8 @@ if (endDate.getTime() >= today.getTime()) {
       }
     }
   );
-
-
+  
+  
 }
 
   }
@@ -171,6 +241,8 @@ interface Product {
   images: Array<{ id: number; url: string }>;
   addedOffers: OfferItem[];
   user: User;
+  total_ordered:string ;
+
   totalOffers:number;
   priceAfterOffers:number;
 }

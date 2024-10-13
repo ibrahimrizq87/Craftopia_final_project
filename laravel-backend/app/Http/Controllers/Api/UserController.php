@@ -14,6 +14,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\DB;
 
+
 class UserController extends Controller
 {
     public function login(Request $request) {
@@ -47,11 +48,18 @@ class UserController extends Controller
         }
 
     
+        $status = null;
+        if ($user->role === 'customer') {
+            $status = Customer::where('user_id', $user->id)->value('status'); 
+        } elseif ($user->role === 'seller') {
+            $status = Seller::where('user_id', $user->id)->value('status'); 
+        }
+
         return response()->json([
             'token' => $user->createToken($request->device_name)->plainTextToken,
             'user' => $user,
+            'status' => $status, 
         ]);
-    
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
@@ -129,6 +137,35 @@ class UserController extends Controller
     }
 
 
+
+    public function updatePassword(Request $request)
+{
+
+    $std_validator = Validator::make($request->all(), [
+        'currentPassword' => 'required',
+        'newPassword' => 'required|min:8',
+        'password_confirmation' => 'required|same:newPassword',
+    ]);
+
+    if ($std_validator->fails()) {
+        return response()->json(['errors' => $std_validator->errors()], 400);
+    }
+
+
+    if (!Hash::check($request->currentPassword, Auth::user()->password)) {
+        return response()->json(['error' => 'Invalid current password.'], 401);
+    }
+
+
+    $user = Auth::user();
+    $user->password = Hash::make($request->newPassword);
+    $user->save();
+
+    return response()->json(['message' => 'Password updated successfully.'], 200);
+
+}
+
+
     function register(Request $request) {
         try {
         $std_validator = Validator::make($request->all(), [
@@ -142,7 +179,7 @@ class UserController extends Controller
             'gender' => 'required|string|in:male,female,other',
             'last_name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:15', 
-            'shope_name' => 'nullable|string|max:255',
+            'shop_name' => 'nullable|string|max:255',
             'about' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
         ], [
@@ -154,7 +191,7 @@ class UserController extends Controller
             "image.max" => "The image size should not exceed 2MB.",
         ]);
     
-        $std_validator->sometimes('shope_name', 'required|string|max:255', function($input) {
+        $std_validator->sometimes('shop_name', 'required|string|max:255', function($input) {
             return $input->role === 'seller';
         });
         $std_validator->sometimes('about', 'required|string|max:255', function($input) {

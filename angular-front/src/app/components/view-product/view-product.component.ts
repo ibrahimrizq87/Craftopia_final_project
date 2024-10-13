@@ -5,7 +5,7 @@ import { ReviewComponent } from "../product-details/review/review.component";
 import { ViewReviewsComponent } from "../view-reviews/view-reviews.component";
 import { ProductDetailsComponent } from '../product-details/product-details.component';
 import { ProductService } from '../../services/product.service';
-import { CategoryService } from '../../services/category.service';
+import { CartService } from '../../services/cart.service';
 import { Router } from '@angular/router';
 import { WishListService } from '../../services/wishlist.service';
 import { ReviewService } from '../../services/review.service';
@@ -50,7 +50,8 @@ export class ViewProductComponent {
     private userService: UserService,
     private router: Router,
     private reviewService: ReviewService,
-    private wishListService: WishListService) { }
+    private wishListService: WishListService,
+  private cartService:CartService) { }
 
     onProductClick(product: any) {
       this.productService.setProduct(product);
@@ -80,7 +81,58 @@ export class ViewProductComponent {
   onQuantityChange(value: string) {
     console.log('Quantity changed:', value);
   }
-  addToCart() { }
+  addToCart() {
+this.cartService.addItem({'product_id':this.product.id , 'quantity' :this.quantity}).subscribe(
+  response=>{
+    alert('added successfully to your cart');
+    this.router.navigate(['/cart']);
+
+console.log(response);
+  },error=>{
+
+console.log('error Happend::',error);
+if(error.status === 401){
+
+  sessionStorage.removeItem('authToken');
+  sessionStorage.setItem('loginSession', 'true');
+
+  this.router.navigate(['/login']);
+}else if(error.status === 403){
+  alert("this product is already in your cart\n check your cart");
+}else{
+  alert('some error happend');
+}
+  }
+  
+);
+   }
+
+
+   addAnotherToCart(product:any) {
+    this.cartService.addItem({'product_id':product.id , 'quantity' : 1 }).subscribe(
+      response=>{
+        alert('added successfully to your cart');
+        this.router.navigate(['/cart']);
+    
+    console.log(response);
+      },error=>{
+    
+    console.log('error Happend::',error);
+    if(error.status === 401){
+    
+      sessionStorage.removeItem('authToken');
+      sessionStorage.setItem('loginSession', 'true');
+    
+      this.router.navigate(['/login']);
+    }else if(error.status === 403){
+      alert("this product is already in your cart\n check your cart");
+    }else{
+      alert('some error happend');
+    }
+      }
+      
+    );
+       }
 
 
 
@@ -176,7 +228,7 @@ componentDataRefresh(){
   
   if (endDate.getTime() >= today.getTime()) { 
     product.totalOffers +=offerAdded.offer.discount;
-    product.priceAfterOffers -= (offerAdded.offer.discount/100) *product.price;
+    product.priceAfterOffers -= Math.floor((offerAdded.offer.discount / 100) *product.price);
   }
   
         });
@@ -300,7 +352,7 @@ this.stars = 0;
     this.showReview = !this.showReview;
   }
 
-
+  
 
   updateUser(review:any) {
 
@@ -343,6 +395,9 @@ this.stars = 0;
             }
           )
       }
+
+
+      
       
     } else {
       sessionStorage.removeItem('authToken');
@@ -350,7 +405,7 @@ this.stars = 0;
       this.router.navigate(['/login']);
     }
   }
-
+  
 
 
 

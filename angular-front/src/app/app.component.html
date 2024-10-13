@@ -1,4 +1,3 @@
-
 <div *ngIf="!dashboard">
     <app-header></app-header>
 </div>
@@ -17,14 +16,13 @@
     </div>
     
     <div *ngIf="user.role == 'seller'">
+        <app-seller-page class="seller"></app-seller-page>
     </div>
         
 </div>
 
 <div *ngIf="!dashboard">
     <app-footer></app-footer>
-</div>
+</div> 
 
-
-
-
+ <!-- <app-admin-page></app-admin-page> -->
